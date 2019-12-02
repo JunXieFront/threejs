@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>clip_intersection</title>
+    <style>
+        body {
+            margin: 0
+        }
+    </style>
+</head>
+
+<body>
+    <script src="../three.js"></script>
+    <script>
+        //scene是场景对象，camera是照相机对象，renderer是渲染器对象
+        var scene, camera, renderer;
+        //三个裁剪面
+        var clipPlanes = [
+            new THREE.Plane(new THREE.Vector3(1, 0, 0), 0),
+            new THREE.Plane(new THREE.Vector3(0, - 1, 0), 0),
+            new THREE.Plane(new THREE.Vector3(0, 0, - 1), 0)
+        ];
+        function init() {
+            scene = new THREE.Scene();//初始化场景对象
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 200)
+            //初始化相机对象，视锥角是45°，宽高为视口的宽高比，近平面和原平面是1和200；
+            renderer = new THREE.WebGLRenderer({
+                antialias: true//消除抗锯齿
+            });
+            renderer.localClippingEnabled = true;
+            renderer.setSize(window.innerWidth, window.innerHeight) // 设置渲染的宽高
+            renderer.setPixelRatio(window.devicePixelRatio);//设置像素比为屏幕的像素比
+            document.body.appendChild(renderer.domElement)//将canvas添加到body中
+            camera.position.set(- 1.5, 2.5, 10)//设置照相机的位置
+            var light = new THREE.HemisphereLight(0xffffff, 0x080808, 1.5);//创建光照，第一个参数是天空的颜色，第二个参数是大地的颜色，第三个是光照强度
+            light.position.set(- 1.25, 1, 1.25);
+            scene.add(light);
+            var group = new THREE.Group
+            for (var i = 1; i <= 30; i += 2) {
+                var geometry = new THREE.SphereBufferGeometry(i / 30, 48, 24);
+                var material = new THREE.MeshLambertMaterial({
+                    color: new THREE.Color().setHSL(Math.random(), 0.5, 0.5),
+                    side: THREE.DoubleSide,
+                    clippingPlanes: clipPlanes,
+                    clipIntersection: true
+                });
+                group.add(new THREE.Mesh(geometry, material));
+            }
+            scene.add(group);
+            let helpers = new THREE.Group();//创建一个分组，作为面辅助对象的分类
+            helpers.add( new THREE.PlaneHelper(clipPlanes[0],2,0xff0000) ) //依次添加三个面辅助对象
+            helpers.add( new THREE.PlaneHelper(clipPlanes[1],2,0x00ff00) )
+            helpers.add( new THREE.PlaneHelper(clipPlanes[2],2,0x00ffff) )
+        scene.add(helpers)
+        }
+
+        function render() {
+            renderer.render(scene, camera)
+        }
+        init()
+        render()
+
+    </script>
+</body>
+
+</html>
