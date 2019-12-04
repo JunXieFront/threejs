@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="../../three.js"></script>
+</head>
+
+<body>
+    <script>
+        //初始化三个必须的对象
+        var scene, renderer, camera;
+        var sun,moon,earth;
+        var angle = 0;
+        function init() {
+             scene = new THREE.Scene();
+             renderer = new THREE.WebGLRenderer({
+                antialias: true
+            });
+             camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+            camera.position.set(0, 0, 300)
+        }
+        function createSphere(radius, texture) {
+            var geometry = new THREE.SphereBufferGeometry(radius, 32, 32);
+            var material = new THREE.MeshBasicMaterial({
+                map: texture
+            })
+            var sphere = new THREE.Mesh(geometry, material);
+            return sphere;
+        }
+        function createTexture(src) {
+            var loader = new THREE.TextureLoader();
+            var texture = loader.load(src);
+            return texture;
+        }
+        function animate() {
+            earth.rotation.y += 0.02;
+            moon.rotation.y += 0.02;
+            angle += 0.01 * Math.PI;
+            initOrbit(angle)
+            renderer.render(scene,camera)
+            requestAnimationFrame(animate)
+        }
+        //初始化轨道
+        function initOrbit(angle){
+            var earthX = 100 * Math.cos(angle);
+            var earthZ = 80 * Math.sin(angle) - 40;
+            var moonX = 50 * Math.cos(angle) + 3;
+            var moonZ = 40 * Math.sin(angle) + 6;
+            group.position.set(earthX,0,earthZ);
+            moon.position.set(moonX,0,moonZ);
+            group.position.applyMatrix4(new THREE.Matrix4().makeRotationZ(Math.PI / 5));
+            moon.position.applyMatrix4(new THREE.Matrix4().makeRotationZ(-Math.PI / 6));
+        }
+        function main() {
+            init()
+            var earthTexture = createTexture('./images/earth.jpg');
+            var sunTexture = createTexture('./images/sun.jpg');
+            var moonTexture = createTexture('./images/moon.jpg');
+            earth = createSphere(10, earthTexture);
+            sun = createSphere(20, sunTexture);
+            moon = createSphere(5, moonTexture);
+            sun.position.set(0, 0, -100); 
+       
+            moon.position.set(30,0,20);
+            group = new THREE.Group();
+            group.position.set(0, 0, 40);
+            group.add(earth,moon)
+            scene.add(group,sun);
+            animate()
+        }
+        main()
+
+    </script>
+</body>
+
+</html>
